@@ -6,3 +6,14 @@
 *.csproj
 *.unityproj
 *.sln
+
+.DS_Store
+*.swp
+*.sublime-*
+*.pbxuser
+*.xcworkspace
+*.pidb
+*.userprefs
+
+ios/
+web/
