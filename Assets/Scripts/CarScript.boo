@@ -1,6 +1,7 @@
 import UnityEngine
 
 class CarScript (MonoBehaviour):
+  public steering as GameObject
 
   def Start():
     pass
@@ -19,6 +20,7 @@ class CarScript (MonoBehaviour):
     rigidbody.AddForce(vec)
 
     v = Input.GetAxis("Vertical") * 40.0F
+    v = 20
     r = transform.localEulerAngles.y * Mathf.Deg2Rad
     vx = v * Mathf.Sin(r)
     vz = v * Mathf.Cos(r)
@@ -27,5 +29,8 @@ class CarScript (MonoBehaviour):
     rv = rigidbody.angularVelocity.y * -1.0F
     rigidbody.AddTorque(0, rv, 0)
 
-    rv = Input.GetAxis("Horizontal")
-    rigidbody.AddTorque(0, rv * 1.0F, 0)
+    //rv = Input.GetAxis("Horizontal")
+    script = steering.GetComponent[of SteeringController]()
+    rv = script.angle / PI
+    rigidbody.AddTorque(0, rv * 2.0F, 0)
+
