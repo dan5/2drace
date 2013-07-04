@@ -39,16 +39,18 @@ class SteeringController (MonoBehaviour):
       elif is_free:
         is_free = false
         dir = Atan2(dx, dy)
+        last_dir = dir
       else:
         dir = Atan2(dx, dy)
         dir = rad_round(dir, last_dir)
-        angle_ += (dir - last_dir) * 0.6f
-        angle_ = Max(angle_, -PI)
-        angle_ = Min(angle_, PI)
+        angle_ += (dir - last_dir)
+        MAX = PI / 2
+        angle_ = Max(angle_, -MAX)
+        angle_ = Min(angle_, MAX)
       last_dir = dir
     if is_free:
       BORDER_R = 10.0f * Deg2Rad
-      SPEED = PI
+      SPEED = PI * 2.0f
       if angle_ > BORDER_R:
         angle_ -= SPEED * Time.deltaTime
       elif angle_ < -BORDER_R:
