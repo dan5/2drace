@@ -3,7 +3,8 @@ import Mathf
 
 class SteeringController (MonoBehaviour):
   phase as string
-  touch_position = Vector3.zero
+  touches = (MyTouch(), MyTouch())
+
   use_mouse = false
   is_free = false
   public score as GUIText
@@ -25,14 +26,35 @@ class SteeringController (MonoBehaviour):
   def Update():
     flick_controller()
 
+  steering_touch as MyTouch = null
+  engine_touch as MyTouch = null
   def flick_controller():
     input_touch_device()
-    if (phase == "Ended" and not is_free):
+    if use_mouse:
+      steering_touch = touches[0]
+    else:
+      for touch in touches:
+        if touch.is_active and (touch.phase == "Began" or touch.phase == "Moved"):
+          if touch.position.y / Screen.height < 0.5f:
+            steering_touch = touch
+            if engine_touch == touch:
+              engine_touch = null
+          else:
+            engine_touch = touch
+            if steering_touch == touch:
+              steering_touch = null
+    steering_controller(steering_touch)
+    score.guiText.text = MyTouch.count.ToString()
+
+  def steering_controller(touch as MyTouch):
+    if touch == null:
+      is_free = true
+    elif touch.phase == "Ended" and not is_free:
       is_free = true
       score.guiText.text = Screen.width.ToString()
-    elif (phase == "Began" or phase == "Moved"):
-      dx = touch_position.x - cx
-      dy = touch_position.y - cy
+    elif touch.phase == "Began" or touch.phase == "Moved":
+      dx = touch.position.x - cx
+      dy = touch.position.y - cy
       dist = Vector2.Distance(Vector2.zero, Vector2(dx, dy))
       if dist < w * 0.35f:
         is_free = true
@@ -58,24 +80,24 @@ class SteeringController (MonoBehaviour):
       else:
         angle_ += (0 - angle_) * 0.2f
     transform.rotation = Quaternion.Euler(0, angle_ * Rad2Deg, 0);
-    score.guiText.text = angle_.ToString()
 
   // for mouse
   last_mouse_position = Vector3.zero
   is_touched = false
   def input_touch_device():
-    phase = null
+    touches[0].phase = null
     if use_mouse:
-      touch_position = Input.mousePosition
+      MyTouch.count = 1
+      touches[0].position = Input.mousePosition
       if (Input.GetMouseButtonDown(0)):
-        phase = "Began"
+        touches[0].phase = "Began"
         is_touched = true
       if (Input.GetMouseButtonUp(0)):
-        phase = "Ended"
+        touches[0].phase = "Ended"
         is_touched = false
       if (last_mouse_position != Input.mousePosition):
         if (is_touched):
-          phase = "Moved"
+          touches[0].phase = "Moved"
         last_mouse_position = Input.mousePosition
     /*
     TouchPhase.Began タッチの開始
@@ -86,21 +108,25 @@ class SteeringController (MonoBehaviour):
     */
     else:
       count = Input.touchCount
-      if (count > 0):
-        touch = Input.GetTouch(0)
-        touch_position = touch.position
-        if (touch.phase == TouchPhase.Began):
-          phase = "Began"
-        elif (touch.phase == TouchPhase.Ended):
-          phase = "Ended"
-        elif (touch.phase == TouchPhase.Moved):
-          phase = "Moved"
-        elif (touch.phase == TouchPhase.Canceled):
-          phase = "Canceled"
+      MyTouch.count = count
+      for i in range(len(touches)):
+        if i < count:
+          touch = Input.GetTouch(i)
+          touches[i].is_active = true
+          touches[i].position = touch.position
+          if (touch.phase == TouchPhase.Began):
+            touches[i].phase = "Began"
+          elif (touch.phase == TouchPhase.Ended):
+            touches[i].phase = "Ended"
+          elif (touch.phase == TouchPhase.Moved):
+            touches[i].phase = "Moved"
+          elif (touch.phase == TouchPhase.Canceled):
+            touches[i].phase = "Canceled"
+          else:
+            print("other")
         else:
-          print("other")
-      else:
-        touch_position = Vector3.zero
+          touches[i].is_active = false
+          touches[i].position = Vector3.zero
 
 
   def rad_round(r as single, target as single):
@@ -110,3 +136,8 @@ class SteeringController (MonoBehaviour):
       r += PI * 2
     return r
 
+class MyTouch:
+  public static count = 0
+  public is_active as bool
+  public phase as string
+  public position = Vector3.zero
