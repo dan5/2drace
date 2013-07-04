@@ -2,12 +2,9 @@ import UnityEngine
 import Mathf
 
 class SteeringController (MonoBehaviour):
-  phase as string
-  touches = (MyTouch(), MyTouch())
-
   use_mouse = false
   is_free = false
-  public score as GUIText
+  public scoreObj as GUIText
 
   w as single = Screen.width * 0.3f
   cx as single = Screen.width / 2
@@ -30,11 +27,11 @@ class SteeringController (MonoBehaviour):
   steering_touch as MyTouch = null
   engine_touch as MyTouch = null
   def flick_controller():
-    input_touch_device()
+    MyTouch.input_touch_device()
     if use_mouse:
-      steering_touch = touches[0]
+      steering_touch = MyTouch.touches[0]
     else:
-      for touch in touches:
+      for touch in MyTouch.touches:
         if touch.phase == "Began" or touch.phase == "Moved":
           if touch.position.y / Screen.height < 0.5f:
             steering_touch = touch
@@ -45,14 +42,14 @@ class SteeringController (MonoBehaviour):
             if steering_touch == touch:
               steering_touch = null
     steering_controller(steering_touch)
-    score.guiText.text = MyTouch.count.ToString()
+    scoreObj.guiText.text = MyTouch.count.ToString()
 
   def steering_controller(touch as MyTouch):
     if touch == null:
       is_free = true
     elif touch.phase == "Ended" and not is_free:
       is_free = true
-      score.guiText.text = Screen.width.ToString()
+      scoreObj.guiText.text = Screen.width.ToString()
     elif touch.phase == "Began" or touch.phase == "Moved":
       dx = touch.position.x - cx
       dy = touch.position.y - cy
@@ -82,24 +79,46 @@ class SteeringController (MonoBehaviour):
         angle_ += (0 - angle_) * 0.2f
     transform.rotation = Quaternion.Euler(0, angle_ * Rad2Deg, 0);
 
+  def rad_round(r as single, target as single):
+    while r - target >  PI:
+      r -= PI * 2
+    while r - target < -PI:
+      r += PI * 2
+    return r
+
+class MyTouch:
+  static touches_ = (MyTouch(), MyTouch())
+  static count_ = 0
+  public phase as string
+  public position = Vector3.zero
+
+  static touches:
+    get:
+      return touches_
+
+  static count:
+    get:
+      return count_
+
   // for mouse
-  last_mouse_position = Vector3.zero
-  is_touched = false
-  def input_touch_device():
+  static last_mouse_position = Vector3.zero
+  static is_touched = false
+
+  static def input_touch_device():
     use_mouse = Input.touchCount == 0
     if use_mouse:
-      MyTouch.count = 1
-      touches[0].phase = null
-      touches[0].position = Input.mousePosition
+      count_ = 1
+      touches_[0].phase = null
+      touches_[0].position = Input.mousePosition
       if (Input.GetMouseButtonDown(0)):
-        touches[0].phase = "Began"
+        touches_[0].phase = "Began"
         is_touched = true
       if (Input.GetMouseButtonUp(0)):
-        touches[0].phase = "Ended"
+        touches_[0].phase = "Ended"
         is_touched = false
       if (last_mouse_position != Input.mousePosition):
         if (is_touched):
-          touches[0].phase = "Moved"
+          touches_[0].phase = "Moved"
         last_mouse_position = Input.mousePosition
     /*
     TouchPhase.Began タッチの開始
@@ -109,36 +128,22 @@ class SteeringController (MonoBehaviour):
     TouchPhase.Canceled タッチがキャンセルになった場合
     */
     else:
-      count = Input.touchCount
-      MyTouch.count = count
-      for i in range(len(touches)):
-        if i < count:
+      count_ = Input.touchCount
+      for i in range(len(touches_)):
+        if i < count_:
           touch = Input.GetTouch(i)
-          touches[i].position = touch.position
+          touches_[i].position = touch.position
           if (touch.phase == TouchPhase.Began):
-            touches[i].phase = "Began"
+            touches_[i].phase = "Began"
           elif (touch.phase == TouchPhase.Ended):
-            touches[i].phase = "Ended"
+            touches_[i].phase = "Ended"
           elif (touch.phase == TouchPhase.Moved):
-            touches[i].phase = "Moved"
+            touches_[i].phase = "Moved"
           elif (touch.phase == TouchPhase.Canceled):
-            touches[i].phase = "Canceled"
+            touches_[i].phase = "Canceled"
           else:
-            touches[i].phase = null
+            touches_[i].phase = null
             print("other")
         else:
-          touches[i].phase = null
-          touches[i].position = Vector3.zero
-
-
-  def rad_round(r as single, target as single):
-    while r - target >  PI:
-      r -= PI * 2
-    while r - target < -PI:
-      r += PI * 2
-    return r
-
-class MyTouch:
-  public static count = 0
-  public phase as string
-  public position = Vector3.zero
+          touches_[i].phase = null
+          touches_[i].position = Vector3.zero

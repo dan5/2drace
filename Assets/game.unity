@@ -658,4 +658,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8aa9a403104394d30bc5fb674525b2e9, type: 3}
   m_Name: 
-  score: {fileID: 1706929154}
+  scoreObj: {fileID: 1706929154}
