@@ -20,8 +20,9 @@ class SteeringController (MonoBehaviour):
       return angle_
 
   def Start():
-    ifdef not UNITY_IPHONE or UNITY_EDITOR:
-      use_mouse = true
+    //ifdef not UNITY_IPHONE or UNITY_EDITOR:
+    //  use_mouse = true
+    use_mouse = false
 
   def Update():
     flick_controller()
@@ -34,7 +35,7 @@ class SteeringController (MonoBehaviour):
       steering_touch = touches[0]
     else:
       for touch in touches:
-        if touch.is_active and (touch.phase == "Began" or touch.phase == "Moved"):
+        if touch.phase == "Began" or touch.phase == "Moved":
           if touch.position.y / Screen.height < 0.5f:
             steering_touch = touch
             if engine_touch == touch:
@@ -85,9 +86,10 @@ class SteeringController (MonoBehaviour):
   last_mouse_position = Vector3.zero
   is_touched = false
   def input_touch_device():
-    touches[0].phase = null
+    use_mouse = Input.touchCount == 0
     if use_mouse:
       MyTouch.count = 1
+      touches[0].phase = null
       touches[0].position = Input.mousePosition
       if (Input.GetMouseButtonDown(0)):
         touches[0].phase = "Began"
@@ -112,7 +114,6 @@ class SteeringController (MonoBehaviour):
       for i in range(len(touches)):
         if i < count:
           touch = Input.GetTouch(i)
-          touches[i].is_active = true
           touches[i].position = touch.position
           if (touch.phase == TouchPhase.Began):
             touches[i].phase = "Began"
@@ -123,9 +124,10 @@ class SteeringController (MonoBehaviour):
           elif (touch.phase == TouchPhase.Canceled):
             touches[i].phase = "Canceled"
           else:
+            touches[i].phase = null
             print("other")
         else:
-          touches[i].is_active = false
+          touches[i].phase = null
           touches[i].position = Vector3.zero
 
 
@@ -138,6 +140,5 @@ class SteeringController (MonoBehaviour):
 
 class MyTouch:
   public static count = 0
-  public is_active as bool
   public phase as string
   public position = Vector3.zero
