@@ -8,7 +8,7 @@ class SteeringController (MonoBehaviour):
   is_engine_free = true
 
   w as single = Screen.width * 0.3f
-  cx as single = Screen.width / 2
+  cx as single = Screen.width * 0.6667f
   cy as single = w
   last_dir as single
   angle_ = 0.0f
@@ -26,6 +26,7 @@ class SteeringController (MonoBehaviour):
     Application.targetFrameRate = 60
     //ifdef not UNITY_IPHONE or UNITY_EDITOR:
     //  use_mouse = true
+    //AdBannerObserver.Initialize("a14e4873bd055aa", "test_device_code_here", 60.0f)
 
   def Update():
     touch_controller()
@@ -36,7 +37,7 @@ class SteeringController (MonoBehaviour):
     MyTouch.InputDevice()
     if MyTouch.use_mouse:
       touch = MyTouch.touches[0]
-      if touch.position.y / Screen.height < 0.5f:
+      if touch.position.x / Screen.width > 0.333333f:
         steering_touch = touch
         engine_touch = null
       else:
@@ -45,7 +46,7 @@ class SteeringController (MonoBehaviour):
     else:
       for touch in MyTouch.touches:
         if touch.phase == "Began" or touch.phase == "Moved":
-          if touch.position.y / Screen.height < 0.5f:
+          if touch.position.x / Screen.width > 0.333333f:
             steering_touch = touch
             if engine_touch == touch:
               engine_touch = null
@@ -56,7 +57,7 @@ class SteeringController (MonoBehaviour):
     engine_controller(engine_touch)
     steering_controller(steering_touch)
 
-  last_engine_x = 0.0f
+  last_engine_y = 0.0f
   def engine_controller(touch as MyTouch):
     if touch == null:
       pass
@@ -64,10 +65,10 @@ class SteeringController (MonoBehaviour):
       is_engine_free = true
     elif touch.phase == "Began" or touch.phase == "Moved":
       if is_engine_free:
-        last_engine_x = touch.position.x
+        last_engine_y = touch.position.x
         is_engine_free = false
-      dx = (touch.position.x - last_engine_x) / Screen.width
-      power_ += dx * 16.0f * Time.deltaTime
+      dy = (touch.position.y - last_engine_y) / Screen.height
+      power_ += dy * 16.0f * Time.deltaTime
     if is_engine_free:
       power_ += (0 - power_) * 2.0f * Time.deltaTime
     MAX = 1.0f
