@@ -2,6 +2,8 @@ import UnityEngine
 
 class CarScript (MonoBehaviour):
   public steering as GameObject
+  public speedText as GUIText
+  public engineSpeedText as GUIText
   angle = 0.0f
   v = 0.0f
   vx = 0.0f
@@ -12,7 +14,7 @@ class CarScript (MonoBehaviour):
   grip = 8.0f
 
   GRIP = 1.0f
-  SPEED = 16.0f
+  SPEED = 30.0f
 
   def Start():
     pass
@@ -42,9 +44,11 @@ class CarScript (MonoBehaviour):
           if before_spin_timer > 0.25f:
             spin_angle = script.angle
             spin_timer = 0.8f
-          // v の減速
         else:
           before_spin_timer = 0
+        // v の減速
+        //v -= 80.0f * Time.deltaTime
+        //todo: 進んでいる方向と実際の向きが大きくずれた時に減速
       else:
         before_spin_timer = 0
       // 曲がるには速度が必要
@@ -67,6 +71,11 @@ class CarScript (MonoBehaviour):
     transform.position.z += vz * Time.deltaTime
 
     transform.rotation = Quaternion.Euler(0, angle * Rad2Deg, 0);
+
+    sp as int = Mathf.Sqrt(vx * vx + vz * vz) * 10
+    speedText.guiText.text = sp.ToString()
+    _v as int = v * 10
+    engineSpeedText.guiText.text = _v.ToString()
 
     Camera.main.transform.position.x = transform.position.x
     Camera.main.transform.position.z = transform.position.z - 2.5
