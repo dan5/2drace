@@ -2,34 +2,46 @@ import UnityEngine
 import Mathf
 
 class SteeringController (MonoBehaviour):
-  use_mouse = false
-  is_free = false
   public scoreObj as GUIText
+
+  is_free = true
+  is_engine_free = true
 
   w as single = Screen.width * 0.3f
   cx as single = Screen.width / 2
   cy as single = w
   last_dir as single
   angle_ = 0.0f
+  power_ = 0.0f
   
+  power as single:
+    get:
+      return power_
+
   angle as single:
     get:
       return angle_
 
   def Start():
+    Application.targetFrameRate = 60
     //ifdef not UNITY_IPHONE or UNITY_EDITOR:
     //  use_mouse = true
-    use_mouse = false
 
   def Update():
-    flick_controller()
+    touch_controller()
 
   steering_touch as MyTouch = null
   engine_touch as MyTouch = null
-  def flick_controller():
-    MyTouch.input_touch_device()
-    if use_mouse:
-      steering_touch = MyTouch.touches[0]
+  def touch_controller():
+    MyTouch.InputDevice()
+    if MyTouch.use_mouse:
+      touch = MyTouch.touches[0]
+      if touch.position.y / Screen.height < 0.5f:
+        steering_touch = touch
+        engine_touch = null
+      else:
+        steering_touch = null
+        engine_touch = touch
     else:
       for touch in MyTouch.touches:
         if touch.phase == "Began" or touch.phase == "Moved":
@@ -41,15 +53,33 @@ class SteeringController (MonoBehaviour):
             engine_touch = touch
             if steering_touch == touch:
               steering_touch = null
+    engine_controller(engine_touch)
     steering_controller(steering_touch)
-    scoreObj.guiText.text = MyTouch.count.ToString()
+
+  last_engine_x = 0.0f
+  def engine_controller(touch as MyTouch):
+    if touch == null:
+      pass
+    elif touch.phase == "Ended" and not is_engine_free:
+      is_engine_free = true
+    elif touch.phase == "Began" or touch.phase == "Moved":
+      if is_engine_free:
+        last_engine_x = touch.position.x
+        is_engine_free = false
+      dx = (touch.position.x - last_engine_x) / Screen.width
+      power_ += dx * 16.0f * Time.deltaTime
+    if is_engine_free:
+      power_ += (0 - power_) * 2.0f * Time.deltaTime
+    MAX = 1.0f
+    power_ = Max(power_, -MAX)
+    power_ = Min(power_, MAX)
+    scoreObj.guiText.text = power_.ToString()
 
   def steering_controller(touch as MyTouch):
     if touch == null:
       is_free = true
     elif touch.phase == "Ended" and not is_free:
       is_free = true
-      scoreObj.guiText.text = Screen.width.ToString()
     elif touch.phase == "Began" or touch.phase == "Moved":
       dx = touch.position.x - cx
       dy = touch.position.y - cy
@@ -87,10 +117,15 @@ class SteeringController (MonoBehaviour):
     return r
 
 class MyTouch:
+  static use_mouse_ = false
   static touches_ = (MyTouch(), MyTouch())
   static count_ = 0
   public phase as string
   public position = Vector3.zero
+
+  static use_mouse:
+    get:
+      return use_mouse_
 
   static touches:
     get:
@@ -104,9 +139,9 @@ class MyTouch:
   static last_mouse_position = Vector3.zero
   static is_touched = false
 
-  static def input_touch_device():
-    use_mouse = Input.touchCount == 0
-    if use_mouse:
+  static def InputDevice():
+    use_mouse_ = Input.touchCount == 0
+    if use_mouse_:
       count_ = 1
       touches_[0].phase = null
       touches_[0].position = Input.mousePosition

@@ -3,6 +3,7 @@ import UnityEngine
 class CarScript (MonoBehaviour):
   public steering as GameObject
   angle = 0.0f
+  v = 0.0f
 
   def Start():
     pass
@@ -12,7 +13,9 @@ class CarScript (MonoBehaviour):
     angle += script.angle * 4.0f * Time.deltaTime
     transform.rotation = Quaternion.Euler(0, angle * Rad2Deg, 0);
 
-    v = 10.0f
+    t = script.power * 20.0f
+    v += (t - v) * 0.5f * Time.deltaTime
+    v = Mathf.Max(v, 0)
     vx = v * Mathf.Sin(angle)
     vz = v * Mathf.Cos(angle)
     transform.position.x += vx * Time.deltaTime
