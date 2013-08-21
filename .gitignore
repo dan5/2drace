@@ -19,3 +19,4 @@ ios/
 web/
 
 *.png
+*.png.meta
