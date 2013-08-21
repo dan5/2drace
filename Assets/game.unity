@@ -785,7 +785,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 949f5843dc293483986896cd9302ce22, type: 3}
   m_Name: 
   playerObj: {fileID: 1734886011}
-  aTexture: {fileID: 2800000, guid: 94f8e7463c2dc4550989d0428fba0a65, type: 3}
+  aTexture: {fileID: 2800000, guid: 9d5934308e0694044af6664f3b591314, type: 3}
 --- !u!114 &1734886014
 MonoBehaviour:
   m_ObjectHideFlags: 0
